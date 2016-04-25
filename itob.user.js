@@ -13,19 +13,19 @@
 // Load ignored threads
 var threads = GM_getValue("threads");
 if (typeof threads === "undefined") {
-  if (defaultThreads = prompt("Optional: fill in ignored thread list:","|") != null) threads = defaultThreads;
-  else threads = "|";
+  threads = "|";
+  if ((defaultThreads = prompt("Optional: fill in ignored thread list:","|")) !== null && defaultThreads !== "") threads = defaultThreads;
   GM_setValue("threads",threads);
 }
 
 // Loop all threads
-if ($("#bodyarea table.bordercolor table.bordercolor,#quickModForm .tborder table.bordercolor")) {
-  $("#bodyarea table.bordercolor table.bordercolor,#quickModForm .tborder table.bordercolor").each(function() {
+if ($("#bodyarea table.bordercolor table.bordercolor,#bodyarea .tborder table.bordercolor")) {
+  $("#bodyarea table.bordercolor table.bordercolor,#bodyarea .tborder table.bordercolor").each(function() {
     $(this).find("tr").each(function() {
       var link = $(this).find("td:eq(2) a");
       if (typeof link.attr("href") !== "undefined") {
-        var id = link.attr("href").match(/topic\=([0-9]+)/)
-        if(id != null) {
+        var id = link.attr("href").match(/topic\=([0-9]+)/);
+        if(id !== null) {
           if (RegExp("/|"+id[1]+"|/").test(threads)) $(this).addClass("ignored_topic");
           switchLink($(this).find("td:eq(2)"),id);
         }
@@ -66,9 +66,16 @@ function switchLink(element,id) {
 
 // Add Ignored threads link
 $('<td valign="top" class="maintab_back"><a href="#">Ignored threads</a></td>').insertBefore('.maintab_last').click(function(){
-  if (defaultThreads = prompt("Ignored threads:",threads) != null) GM_setValue("threads",defaultThreads);
+  if ((defaultThreads = prompt("Ignored threads:",threads)) !== null) {
+    if (defaultThreads === "") defaultThreads = "|";
+    if (threads != defaultThreads) {
+      threads = defaultThreads;
+      GM_setValue("threads",threads);
+      window.location.reload(false);
+    }
+  }
   return false;
-}); 
+});
 
 // Style
 $('body').append("<style>.addLink,.removeLink{float:right;width:18px;text-align:center;margin:0 2px;padding:5px 0;border:1px solid #476c8e;}.ignored_topic .addLink,.ignored_topic .removeLink{border-color:#acabad}.ignored_topic .newimg{display:none;}</style>");
