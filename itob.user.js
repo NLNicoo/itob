@@ -13,8 +13,8 @@
 // Load ignored threads
 var threads = GM_getValue("threads");
 if (typeof threads === "undefined") {
-  threads = "|";
-  if ((defaultThreads = prompt("Optional: fill in ignored thread list:","|")) !== null && defaultThreads !== "") threads = defaultThreads;
+  threads = "";
+  if ((defaultThreads = prompt("Optional: fill in ignored thread list:","")) !== null && defaultThreads !== "") threads = defaultThreads;
   GM_setValue("threads",threads);
 }
 
@@ -26,7 +26,7 @@ if ($("#bodyarea table.bordercolor table.bordercolor,#bodyarea .tborder table.bo
       if (typeof link.attr("href") !== "undefined") {
         var id = link.attr("href").match(/topic\=([0-9]+)/);
         if(id !== null) {
-          if (RegExp("/|"+id[1]+"|/").test(threads)) $(this).addClass("ignored_topic");
+          if(threads.split(",").indexOf(id[1]) != -1) $(this).addClass("ignored_topic");
           switchLink($(this).find("td:eq(2)"),id);
         }
       }
@@ -37,7 +37,7 @@ if ($("#bodyarea table.bordercolor table.bordercolor,#bodyarea .tborder table.bo
 // Add remove/add link
 function switchLink(element,id) {
   // Check which link to add
-  if(RegExp("/|"+id[1]+"|/").test(threads) !== false) {
+  if(threads.split(",").indexOf(id[1]) != -1) {
     var remove = 1;
     element.find('.addLink').remove();
     var elementHtml = $('<a href="#" class="removeLink">+</a>');
@@ -50,12 +50,16 @@ function switchLink(element,id) {
   // Add link and click handler
   element.prepend(elementHtml).find(elementHtml).click(function(){
     if (remove == 1) {
-       threads = threads.replace("|"+id[1]+"|","|");
-       GM_setValue("threads",threads);
-       $(this).parent().parent().removeClass("ignored_topic");
-       switchLink(element,id);
+      threads = threads.split(",");
+      threads.splice(threads.indexOf(id[1]), 1);
+      threads = threads.join(",");
+      GM_setValue("threads",threads);
+      $(this).parent().parent().removeClass("ignored_topic");
+      switchLink(element,id);
     } else {
-      threads = threads+id[1]+"|";
+      threads = threads.split(",");
+      threads.push(id[1]);
+      threads = threads.join(",");
       GM_setValue("threads",threads);
       $(this).parent().parent().addClass("ignored_topic");
       switchLink(element,id);
@@ -67,7 +71,6 @@ function switchLink(element,id) {
 // Add Ignored threads link
 $('<td valign="top" class="maintab_back"><a href="#">Ignored threads</a></td>').insertBefore('.maintab_last').click(function(){
   if ((defaultThreads = prompt("Ignored threads:",threads)) !== null) {
-    if (defaultThreads === "") defaultThreads = "|";
     if (threads != defaultThreads) {
       threads = defaultThreads;
       GM_setValue("threads",threads);
