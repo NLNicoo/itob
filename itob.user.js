@@ -72,9 +72,14 @@ function switchLink(element,id) {
 $('<td valign="top" class="maintab_back"><a href="#">Ignored threads</a></td>').insertBefore('.maintab_last').click(function(){
   if ((defaultThreads = prompt("Ignored threads:",threads)) !== null) {
     if (threads != defaultThreads) {
-      threads = defaultThreads;
-      GM_setValue("threads",threads);
-      window.location.reload(false);
+      if (defaultThreads.indexOf("...") != -1) {
+        // TODO: should fix maybe
+        alert("Aw.. we got a bug in Chrome where you cannot edit the thread list if it's more than 2,000 characters... sorry :(");
+      } else {
+        threads = defaultThreads;
+        GM_setValue("threads",threads);
+        window.location.reload(false);
+      }
     }
   }
   return false;
